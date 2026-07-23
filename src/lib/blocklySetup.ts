@@ -1,0 +1,108 @@
+import * as Blockly from 'blockly'
+import { pythonGenerator } from 'blockly/python'
+import type { WorkspaceSvg } from 'blockly'
+
+export const TOOLBOX = {
+  kind: 'categoryToolbox',
+  contents: [
+    {
+      kind: 'category',
+      name: '논리',
+      categorystyle: 'logic_category',
+      contents: [
+        { kind: 'block', type: 'controls_if' },
+        { kind: 'block', type: 'logic_compare' },
+        { kind: 'block', type: 'logic_operation' },
+        { kind: 'block', type: 'logic_negate' },
+        { kind: 'block', type: 'logic_boolean' },
+      ],
+    },
+    {
+      kind: 'category',
+      name: '반복',
+      categorystyle: 'loop_category',
+      contents: [
+        { kind: 'block', type: 'controls_repeat_ext' },
+        { kind: 'block', type: 'controls_whileUntil' },
+        { kind: 'block', type: 'controls_for' },
+        { kind: 'block', type: 'controls_forEach' },
+        { kind: 'block', type: 'controls_flow_statements' },
+      ],
+    },
+    {
+      kind: 'category',
+      name: '수학',
+      categorystyle: 'math_category',
+      contents: [
+        { kind: 'block', type: 'math_number' },
+        { kind: 'block', type: 'math_arithmetic' },
+        { kind: 'block', type: 'math_modulo' },
+        { kind: 'block', type: 'math_single' },
+        { kind: 'block', type: 'math_number_property' },
+      ],
+    },
+    {
+      kind: 'category',
+      name: '텍스트',
+      categorystyle: 'text_category',
+      contents: [
+        { kind: 'block', type: 'text' },
+        { kind: 'block', type: 'text_print' },
+        { kind: 'block', type: 'text_join' },
+        { kind: 'block', type: 'text_length' },
+      ],
+    },
+    {
+      kind: 'category',
+      name: '리스트',
+      categorystyle: 'list_category',
+      contents: [
+        { kind: 'block', type: 'lists_create_with' },
+        { kind: 'block', type: 'lists_repeat' },
+        { kind: 'block', type: 'lists_length' },
+        { kind: 'block', type: 'lists_isEmpty' },
+        { kind: 'block', type: 'lists_indexOf' },
+        { kind: 'block', type: 'lists_getIndex' },
+        { kind: 'block', type: 'lists_setIndex' },
+      ],
+    },
+    {
+      kind: 'category',
+      name: '변수',
+      categorystyle: 'variable_category',
+      custom: 'VARIABLE',
+    },
+    {
+      kind: 'category',
+      name: '함수',
+      categorystyle: 'procedure_category',
+      custom: 'PROCEDURE',
+    },
+  ],
+} as const
+
+export function createWorkspace(container: HTMLElement): WorkspaceSvg {
+  return Blockly.inject(container, {
+    toolbox: TOOLBOX as unknown as Blockly.utils.toolbox.ToolboxDefinition,
+    renderer: 'geras',
+    grid: { spacing: 20, length: 3, colour: '#d6e2ea', snap: true },
+    zoom: { controls: true, wheel: true, startScale: 0.9 },
+    trashcan: true,
+    move: { scrollbars: true, drag: true, wheel: true },
+  })
+}
+
+export function workspaceToPython(workspace: WorkspaceSvg): string {
+  const code = pythonGenerator.workspaceToCode(workspace)
+  return code.trim() ? code : '# 블록을 조립하면 파이썬 코드가 생성됩니다.\n'
+}
+
+export function loadXml(workspace: WorkspaceSvg, xmlText: string): void {
+  workspace.clear()
+  const xml = Blockly.utils.xml.textToDom(xmlText)
+  Blockly.Xml.domToWorkspace(xml, workspace)
+}
+
+export function clearWorkspace(workspace: WorkspaceSvg): void {
+  workspace.clear()
+}
