@@ -296,6 +296,73 @@ html[data-theme='dark'] .points li {
 .blockly-host {
   flex: 1;
   min-height: 280px;
+  background: #e2f0f8;
+}
+
+/* 엔트리풍 툴박스 */
+.blockly-host .blocklyToolboxDiv {
+  background: #fff !important;
+  border-right: 1px solid #c9dde8;
+  width: 72px !important;
+  padding: 6px 0;
+}
+
+.blockly-host .blocklyToolboxCategory {
+  margin: 4px 6px !important;
+  padding: 8px 4px !important;
+  border-radius: 10px !important;
+  text-align: center;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  line-height: 1.25;
+  color: #fff !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+}
+
+.blockly-host .blocklyTreeRowContentContainer,
+.blockly-host .blocklyTreeLabel {
+  color: inherit !important;
+  font-weight: 700 !important;
+}
+
+.blockly-host .blocklyToolboxSelected {
+  outline: 2px solid #2c313d;
+  outline-offset: 1px;
+  filter: brightness(1.05);
+}
+
+.entry-cat-judge {
+  background: #4562f5 !important;
+}
+.entry-cat-flow {
+  background: #19baea !important;
+}
+.entry-cat-calc {
+  background: #f4af18 !important;
+  color: #3a2a00 !important;
+}
+.entry-cat-text {
+  background: #e43500 !important;
+}
+.entry-cat-list,
+.entry-cat-variable {
+  background: #dd47d8 !important;
+}
+.entry-cat-func {
+  background: #de5c04 !important;
+}
+
+.blockly-host .blocklyFlyoutBackground {
+  fill: #f4f9fc !important;
+}
+
+.blockly-host .blocklyMainBackground {
+  stroke: none !important;
+}
+
+/* zelos 블록 외곽선 대비 강화 (엔트리 outerLine) */
+.blockly-host .blocklyPath {
+  stroke-width: 1.5px;
 }
 
 .python-pane {

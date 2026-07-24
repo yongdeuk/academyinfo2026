@@ -6,7 +6,6 @@ import {
   loadXml,
   workspaceToPython,
 } from '../lib/blocklySetup'
-import 'blockly/blocks'
 
 interface Props {
   xml?: string

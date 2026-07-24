@@ -1,16 +1,20 @@
 import * as Blockly from 'blockly'
 import { pythonGenerator } from 'blockly/python'
 import type { WorkspaceSvg } from 'blockly'
+import 'blockly/blocks'
+import { ENTRY_COLORS, entryTheme } from './entryTheme'
 
 export const TOOLBOX = {
   kind: 'categoryToolbox',
   contents: [
     {
       kind: 'category',
-      name: '논리',
+      name: '판단',
       categorystyle: 'logic_category',
+      cssConfig: {
+        container: 'blocklyToolboxCategory entry-cat entry-cat-judge',
+      },
       contents: [
-        { kind: 'block', type: 'controls_if' },
         { kind: 'block', type: 'logic_compare' },
         { kind: 'block', type: 'logic_operation' },
         { kind: 'block', type: 'logic_negate' },
@@ -19,9 +23,13 @@ export const TOOLBOX = {
     },
     {
       kind: 'category',
-      name: '반복',
+      name: '흐름',
       categorystyle: 'loop_category',
+      cssConfig: {
+        container: 'blocklyToolboxCategory entry-cat entry-cat-flow',
+      },
       contents: [
+        { kind: 'block', type: 'controls_if' },
         { kind: 'block', type: 'controls_repeat_ext' },
         { kind: 'block', type: 'controls_whileUntil' },
         { kind: 'block', type: 'controls_for' },
@@ -31,8 +39,11 @@ export const TOOLBOX = {
     },
     {
       kind: 'category',
-      name: '수학',
+      name: '계산',
       categorystyle: 'math_category',
+      cssConfig: {
+        container: 'blocklyToolboxCategory entry-cat entry-cat-calc',
+      },
       contents: [
         { kind: 'block', type: 'math_number' },
         { kind: 'block', type: 'math_arithmetic' },
@@ -43,8 +54,11 @@ export const TOOLBOX = {
     },
     {
       kind: 'category',
-      name: '텍스트',
+      name: '문자열',
       categorystyle: 'text_category',
+      cssConfig: {
+        container: 'blocklyToolboxCategory entry-cat entry-cat-text',
+      },
       contents: [
         { kind: 'block', type: 'text' },
         { kind: 'block', type: 'text_print' },
@@ -56,6 +70,9 @@ export const TOOLBOX = {
       kind: 'category',
       name: '리스트',
       categorystyle: 'list_category',
+      cssConfig: {
+        container: 'blocklyToolboxCategory entry-cat entry-cat-list',
+      },
       contents: [
         { kind: 'block', type: 'lists_create_with' },
         { kind: 'block', type: 'lists_repeat' },
@@ -68,25 +85,52 @@ export const TOOLBOX = {
     },
     {
       kind: 'category',
-      name: '변수',
+      name: '자료',
       categorystyle: 'variable_category',
+      cssConfig: {
+        container: 'blocklyToolboxCategory entry-cat entry-cat-variable',
+      },
       custom: 'VARIABLE',
     },
     {
       kind: 'category',
       name: '함수',
       categorystyle: 'procedure_category',
+      cssConfig: {
+        container: 'blocklyToolboxCategory entry-cat entry-cat-func',
+      },
       custom: 'PROCEDURE',
     },
   ],
 } as const
 
+/** 엔트리처럼 if/분기 블록을 흐름(FLOW) 색으로 */
+function applyEntryBlockStyles(): void {
+  for (const type of ['controls_if', 'controls_ifelse']) {
+    const block = Blockly.Blocks[type]
+    if (!block) continue
+    const original = block.init
+    block.init = function (this: Blockly.Block) {
+      original.call(this)
+      this.setStyle('loop_blocks')
+    }
+  }
+}
+
+applyEntryBlockStyles()
+
 export function createWorkspace(container: HTMLElement): WorkspaceSvg {
   return Blockly.inject(container, {
     toolbox: TOOLBOX as unknown as Blockly.utils.toolbox.ToolboxDefinition,
-    renderer: 'geras',
-    grid: { spacing: 20, length: 3, colour: '#d6e2ea', snap: true },
-    zoom: { controls: true, wheel: true, startScale: 0.9 },
+    theme: entryTheme,
+    renderer: 'zelos',
+    grid: {
+      spacing: 25,
+      length: 2,
+      colour: ENTRY_COLORS.FLOW.secondary,
+      snap: true,
+    },
+    zoom: { controls: true, wheel: true, startScale: 0.85 },
     trashcan: true,
     move: { scrollbars: true, drag: true, wheel: true },
   })
