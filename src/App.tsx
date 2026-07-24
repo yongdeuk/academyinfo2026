@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TOPICS } from './data/topics'
 import { EXAMPLES, examplesByTopic } from './data/examples'
+import { PRACTICES, practicesByTopic } from './data/practices'
 import { BlocklyPane } from './components/BlocklyPane'
 import { PythonPane } from './components/PythonPane'
 import { ConsoleDebugger } from './components/ConsoleDebugger'
+import { PracticePanel } from './components/PracticePanel'
 import { debugPython, getPyodide, runPython } from './lib/pyodideRunner'
-import type { AppSettings, DebugFrame, TopicId } from './types'
+import { gradePractice } from './lib/grader'
+import type { AppSettings, DebugFrame, GradeResult, TopicId } from './types'
 import './styles.css'
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -17,9 +20,13 @@ const DEFAULT_SETTINGS: AppSettings = {
   editorTabSize: 4,
 }
 
+type ViewMode = 'example' | 'practice'
+
 export default function App() {
+  const [viewMode, setViewMode] = useState<ViewMode>('example')
   const [topicId, setTopicId] = useState<TopicId>('variables')
   const [exampleId, setExampleId] = useState(EXAMPLES[0].id)
+  const [practiceId, setPracticeId] = useState(PRACTICES[0].id)
   const [code, setCode] = useState(EXAMPLES[0].python)
   const [blockXml, setBlockXml] = useState(EXAMPLES[0].blocklyXml)
   const [stdout, setStdout] = useState('')
@@ -30,6 +37,8 @@ export default function App() {
   const [busy, setBusy] = useState(false)
   const [pyReady, setPyReady] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [grade, setGrade] = useState<GradeResult | null>(null)
+  const [showSolution, setShowSolution] = useState(false)
   const [settings, setSettings] = useState<AppSettings>(() => {
     try {
       const raw = localStorage.getItem('b2p-settings')
@@ -41,7 +50,9 @@ export default function App() {
 
   const topic = TOPICS.find((t) => t.id === topicId)!
   const topicExamples = useMemo(() => examplesByTopic(topicId), [topicId])
+  const topicPractices = useMemo(() => practicesByTopic(topicId), [topicId])
   const example = EXAMPLES.find((e) => e.id === exampleId) ?? topicExamples[0]
+  const practice = PRACTICES.find((p) => p.id === practiceId) ?? topicPractices[0]
 
   useEffect(() => {
     localStorage.setItem('b2p-settings', JSON.stringify(settings))
@@ -57,24 +68,47 @@ export default function App() {
       })
   }, [])
 
-  const loadExample = useCallback((id: string) => {
-    const ex = EXAMPLES.find((e) => e.id === id)
-    if (!ex) return
-    setExampleId(ex.id)
-    setTopicId(ex.topicId)
-    setCode(ex.python)
-    setBlockXml(ex.blocklyXml)
+  const clearRunState = () => {
     setStdout('')
     setStderr('')
     setFrames([])
     setFrameIndex(0)
     setDebugging(false)
+    setGrade(null)
+    setShowSolution(false)
+  }
+
+  const loadExample = useCallback((id: string) => {
+    const ex = EXAMPLES.find((e) => e.id === id)
+    if (!ex) return
+    setViewMode('example')
+    setExampleId(ex.id)
+    setTopicId(ex.topicId)
+    setCode(ex.python)
+    setBlockXml(ex.blocklyXml)
+    clearRunState()
+  }, [])
+
+  const loadPractice = useCallback((id: string) => {
+    const p = PRACTICES.find((x) => x.id === id)
+    if (!p) return
+    setViewMode('practice')
+    setPracticeId(p.id)
+    setTopicId(p.topicId)
+    setCode(p.starterCode)
+    setBlockXml('<xml xmlns="https://developers.google.com/blockly/xml"></xml>')
+    clearRunState()
   }, [])
 
   const onTopic = (id: TopicId) => {
     setTopicId(id)
-    const list = examplesByTopic(id)
-    if (list[0]) loadExample(list[0].id)
+    if (viewMode === 'practice') {
+      const list = practicesByTopic(id)
+      if (list[0]) loadPractice(list[0].id)
+    } else {
+      const list = examplesByTopic(id)
+      if (list[0]) loadExample(list[0].id)
+    }
   }
 
   const handleRun = async () => {
@@ -108,6 +142,24 @@ export default function App() {
     }
   }
 
+  const handleGrade = async () => {
+    if (!practice) return
+    setBusy(true)
+    setDebugging(false)
+    try {
+      const result = await gradePractice(practice, code)
+      setGrade(result)
+      setStdout(
+        result.compileError
+          ? ''
+          : `채점: ${result.passed}/${result.total} 통과`,
+      )
+      setStderr(result.compileError ?? '')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const onFrameIndex = (i: number) => {
     setFrameIndex(i)
     const f = frames[i]
@@ -121,25 +173,64 @@ export default function App() {
       <header className="topbar">
         <div className="brand">
           <strong>block2python</strong>
-          <span>중·고 정보 연계 · 블록↔파이썬 · 실행·디버깅</span>
+          <span>중·고 정보 연계 · 예시 학습 · 실습 자동채점</span>
         </div>
         <div className="actions">
+          <div className="mode-toggle" role="group" aria-label="모드">
+            <button
+              type="button"
+              className={viewMode === 'example' ? 'active' : ''}
+              onClick={() => {
+                if (example) loadExample(example.id)
+                else setViewMode('example')
+              }}
+            >
+              예시 학습
+            </button>
+            <button
+              type="button"
+              className={viewMode === 'practice' ? 'active' : ''}
+              onClick={() => {
+                if (practice) loadPractice(practice.id)
+                else setViewMode('practice')
+              }}
+            >
+              실습 문제
+            </button>
+          </div>
           <button
             type="button"
             className="btn primary"
             disabled={busy || !pyReady}
-            onClick={handleRun}
+            onClick={viewMode === 'practice' ? handleGrade : handleRun}
           >
-            {busy ? '실행 중…' : pyReady ? '▶ 실행' : '엔진 로딩…'}
+            {busy
+              ? '처리 중…'
+              : !pyReady
+                ? '엔진 로딩…'
+                : viewMode === 'practice'
+                  ? '✓ 채점'
+                  : '▶ 실행'}
           </button>
-          <button
-            type="button"
-            className="btn"
-            disabled={busy || !pyReady}
-            onClick={handleDebug}
-          >
-            🐞 디버그
-          </button>
+          {viewMode === 'example' ? (
+            <button
+              type="button"
+              className="btn"
+              disabled={busy || !pyReady}
+              onClick={handleDebug}
+            >
+              🐞 디버그
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn"
+              disabled={busy || !pyReady}
+              onClick={handleRun}
+            >
+              ▶ 실행
+            </button>
+          )}
           <button
             type="button"
             className="btn ghost"
@@ -171,25 +262,47 @@ export default function App() {
             <p>{topic.description}</p>
           </div>
 
-          <h2>예시</h2>
-          <ul className="examples">
-            {topicExamples.map((ex) => (
-              <li key={ex.id}>
-                <button
-                  type="button"
-                  className={ex.id === exampleId ? 'active' : ''}
-                  onClick={() => loadExample(ex.id)}
-                >
-                  <span className="ex-title">{ex.title}</span>
-                  <span className={`diff ${ex.difficulty}`}>{ex.difficulty}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          {viewMode === 'example' ? (
+            <>
+              <h2>예시</h2>
+              <ul className="examples">
+                {topicExamples.map((ex) => (
+                  <li key={ex.id}>
+                    <button
+                      type="button"
+                      className={ex.id === exampleId ? 'active' : ''}
+                      onClick={() => loadExample(ex.id)}
+                    >
+                      <span className="ex-title">{ex.title}</span>
+                      <span className={`diff ${ex.difficulty}`}>{ex.difficulty}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <>
+              <h2>실습 문제</h2>
+              <ul className="examples">
+                {topicPractices.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      className={p.id === practiceId ? 'active' : ''}
+                      onClick={() => loadPractice(p.id)}
+                    >
+                      <span className="ex-title">{p.title}</span>
+                      <span className={`diff ${p.difficulty}`}>{p.difficulty}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </aside>
 
         <main className="main">
-          {example ? (
+          {viewMode === 'example' && example ? (
             <section className="lesson">
               <div className="lesson-head">
                 <h1>{example.title}</h1>
@@ -203,12 +316,34 @@ export default function App() {
             </section>
           ) : null}
 
-          <section className="editors">
-            <BlocklyPane
-              xml={blockXml}
-              autoSync={settings.autoSyncBlocks}
-              onCode={setCode}
+          {viewMode === 'practice' && practice ? (
+            <PracticePanel
+              problem={practice}
+              grade={grade}
+              showSolution={showSolution}
+              onToggleSolution={() => setShowSolution((v) => !v)}
+              onLoadSolution={() => {
+                setCode(practice.solution)
+                setGrade(null)
+              }}
+              onResetStarter={() => {
+                setCode(practice.starterCode)
+                setGrade(null)
+              }}
+              onGrade={handleGrade}
+              busy={busy}
+              pyReady={pyReady}
             />
+          ) : null}
+
+          <section className={`editors ${viewMode === 'practice' ? 'practice-editors' : ''}`}>
+            {viewMode === 'example' ? (
+              <BlocklyPane
+                xml={blockXml}
+                autoSync={settings.autoSyncBlocks}
+                onCode={setCode}
+              />
+            ) : null}
             <PythonPane
               value={code}
               onChange={setCode}
@@ -291,8 +426,8 @@ export default function App() {
             </select>
           </label>
           <p className="muted small">
-            파이썬은 브라우저(Pyodide)에서 실행됩니다. 디버그는 줄 단위 트레이스를
-            수집한 뒤 스텝으로 재생합니다.
+            실습 문제는 함수 반환값을 테스트 케이스로 자동 채점합니다. 파이썬은
+            브라우저(Pyodide)에서 실행됩니다.
           </p>
           <button
             type="button"

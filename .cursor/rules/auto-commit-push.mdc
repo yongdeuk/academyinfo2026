@@ -1,0 +1,14 @@
+---
+description: After meaningful code changes, auto commit and push to origin
+alwaysApply: true
+---
+
+# Auto commit & push
+
+For this repository (`block2python` / `academyinfo2026`), after finishing a meaningful set of code or content changes requested by the user:
+
+1. Commit with a concise message focused on why (follow the repo's git commit protocol: status/diff/log, stage relevant files, no secrets).
+2. Push to `origin` on the current branch (`main` unless told otherwise).
+3. Do **not** wait for a separate "커밋해줘/푸시해줘" request.
+4. If push fails due to auth, report briefly and ask for a PAT (or fix credentials); keep the local commit.
+5. Never force-push to main/master. Never commit `.env` or tokens.

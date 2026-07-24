@@ -887,6 +887,308 @@ print("수정:", fixed_average())
         <value name="TEXT"><block type="text"><field name="TEXT">디버거로 한 줄씩 실행해 보세요</field></block></value>
       </block>`),
   },
+
+  // ── 게임·실생활 예시 ──
+  {
+    id: 'sel-oddeven',
+    topicId: 'selection',
+    title: '홀수·짝수 판별',
+    summary: '나머지 연산(%)으로 홀짝을 나누는 고전 연습입니다.',
+    learningPoints: ['n % 2', 'if-else', '문자열 출력'],
+    difficulty: '기초',
+    python: `numbers = [3, 8, 0, 15, 22]
+
+for n in numbers:
+    if n % 2 == 0:
+        print(n, "→ 짝수")
+    else:
+        print(n, "→ 홀수")
+`,
+    blocklyXml: xml(`
+      <block type="controls_forEach" x="20" y="20">
+        <field name="VAR">n</field>
+        <value name="LIST">
+          <block type="lists_create_with">
+            <mutation items="3"></mutation>
+            <value name="ADD0"><block type="math_number"><field name="NUM">3</field></block></value>
+            <value name="ADD1"><block type="math_number"><field name="NUM">8</field></block></value>
+            <value name="ADD2"><block type="math_number"><field name="NUM">15</field></block></value>
+          </block>
+        </value>
+        <statement name="DO">
+          <block type="controls_if">
+            <value name="IF0">
+              <block type="math_number_property">
+                <field name="PROPERTY">EVEN</field>
+                <value name="NUMBER_TO_CHECK"><block type="variables_get"><field name="VAR">n</field></block></value>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="text_print">
+                <value name="TEXT"><block type="text"><field name="TEXT">짝수</field></block></value>
+              </block>
+            </statement>
+            <statement name="ELSE">
+              <block type="text_print">
+                <value name="TEXT"><block type="text"><field name="TEXT">홀수</field></block></value>
+              </block>
+            </statement>
+          </block>
+        </statement>
+      </block>`),
+  },
+  {
+    id: 'sel-rps',
+    topicId: 'selection',
+    title: '가위바위보 게임',
+    summary: '나와 컴퓨터의 선택으로 승패를 판정합니다.',
+    learningPoints: ['다중 조건', '무승부/승리/패배', '규칙 표로 생각하기'],
+    difficulty: '응용',
+    python: `import random
+
+choices = ["가위", "바위", "보"]
+# 연습용 고정 시나리오 (실제 수업에서는 input / random 사용)
+rounds = [
+    ("가위", "보"),
+    ("바위", "보"),
+    ("보", "보"),
+    ("바위", "가위"),
+]
+
+def judge(me, com):
+    if me == com:
+        return "무승부"
+    win = (me == "가위" and com == "보") or \\
+          (me == "바위" and com == "가위") or \\
+          (me == "보" and com == "바위")
+    return "승리" if win else "패배"
+
+for me, com in rounds:
+    print(f"나:{me} vs 컴퓨터:{com} → {judge(me, com)}")
+
+# 한 판 랜덤 체험
+me = "바위"
+com = random.choice(choices)
+print("랜덤 한 판:", me, "vs", com, "→", judge(me, com))
+`,
+    blocklyXml: xml(`
+      <block type="text_print" x="20" y="20">
+        <value name="TEXT"><block type="text"><field name="TEXT">가위바위보 승패를 if로 판정</field></block></value>
+      </block>`),
+  },
+  {
+    id: 'loop-updown',
+    topicId: 'loops',
+    title: '업앤다운 게임',
+    summary: '비밀 숫자를 맞힐 때까지 업/다운 힌트를 줍니다.',
+    learningPoints: ['while 반복', '비교 연산', '시도 횟수'],
+    difficulty: '응용',
+    python: `secret = 37
+guesses = [10, 50, 30, 40, 37]  # 수업에서는 input()으로 입력
+tries = 0
+
+for guess in guesses:
+    tries += 1
+    if guess < secret:
+        print(guess, "→ 업!")
+    elif guess > secret:
+        print(guess, "→ 다운!")
+    else:
+        print(guess, "→ 정답! 시도:", tries, "회")
+        break
+else:
+    print("기회를 모두 사용했습니다.")
+`,
+    blocklyXml: xml(`
+      <block type="variables_set" x="20" y="20">
+        <field name="VAR">secret</field>
+        <value name="VALUE"><block type="math_number"><field name="NUM">37</field></block></value>
+        <next>
+          <block type="variables_set">
+            <field name="VAR">guess</field>
+            <value name="VALUE"><block type="math_number"><field name="NUM">10</field></block></value>
+            <next>
+              <block type="controls_if">
+                <mutation elseif="1" else="1"></mutation>
+                <value name="IF0">
+                  <block type="logic_compare">
+                    <field name="OP">LT</field>
+                    <value name="A"><block type="variables_get"><field name="VAR">guess</field></block></value>
+                    <value name="B"><block type="variables_get"><field name="VAR">secret</field></block></value>
+                  </block>
+                </value>
+                <statement name="DO0">
+                  <block type="text_print">
+                    <value name="TEXT"><block type="text"><field name="TEXT">업!</field></block></value>
+                  </block>
+                </statement>
+                <value name="IF1">
+                  <block type="logic_compare">
+                    <field name="OP">GT</field>
+                    <value name="A"><block type="variables_get"><field name="VAR">guess</field></block></value>
+                    <value name="B"><block type="variables_get"><field name="VAR">secret</field></block></value>
+                  </block>
+                </value>
+                <statement name="DO1">
+                  <block type="text_print">
+                    <value name="TEXT"><block type="text"><field name="TEXT">다운!</field></block></value>
+                  </block>
+                </statement>
+                <statement name="ELSE">
+                  <block type="text_print">
+                    <value name="TEXT"><block type="text"><field name="TEXT">정답!</field></block></value>
+                  </block>
+                </statement>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>`),
+  },
+  {
+    id: 'op-bmi-game',
+    topicId: 'operators',
+    title: 'BMI 건강 계산',
+    summary: '키·몸무게로 BMI를 계산하고 구간을 안내합니다.',
+    learningPoints: ['산술 연산', 'round', '조건 분기 연계'],
+    difficulty: '응용',
+    python: `weight = 70   # kg
+height = 1.75 # m
+
+bmi = round(weight / (height ** 2), 1)
+print("BMI:", bmi)
+
+if bmi < 18.5:
+    print("저체중 구간")
+elif bmi < 23:
+    print("정상 구간")
+elif bmi < 25:
+    print("과체중 구간")
+else:
+    print("비만 구간")
+`,
+    blocklyXml: xml(`
+      <block type="variables_set" x="20" y="20">
+        <field name="VAR">bmi</field>
+        <value name="VALUE"><block type="math_number"><field name="NUM">22.9</field></block></value>
+        <next>
+          <block type="text_print">
+            <value name="TEXT"><block type="variables_get"><field name="VAR">bmi</field></block></value>
+          </block>
+        </next>
+      </block>`),
+  },
+  {
+    id: 'list-rps-stats',
+    topicId: 'lists',
+    title: '가위바위보 전적 정리',
+    summary: '여러 판 결과를 리스트에 담아 승률을 계산합니다.',
+    learningPoints: ['리스트 순회', '카운트', '비율 계산'],
+    difficulty: '응용',
+    python: `results = ["승리", "패배", "승리", "무승부", "승리", "패배"]
+
+win = results.count("승리")
+lose = results.count("패배")
+draw = results.count("무승부")
+total = len(results)
+
+print("전적:", results)
+print("승/패/무:", win, lose, draw)
+print("승률(%):", round(win / total * 100, 1))
+`,
+    blocklyXml: xml(`
+      <block type="text_print" x="20" y="20">
+        <value name="TEXT"><block type="text"><field name="TEXT">리스트.count 로 전적 집계</field></block></value>
+      </block>`),
+  },
+  {
+    id: 'fn-oddeven-func',
+    topicId: 'functions',
+    title: '홀짝 판별 함수',
+    summary: '판별 로직을 함수로 묶어 재사용합니다.',
+    learningPoints: ['함수 정의', '반환값', '호출'],
+    difficulty: '기초',
+    python: `def odd_even(n):
+    if n % 2 == 0:
+        return "짝수"
+    return "홀수"
+
+for x in [1, 2, 10, 99]:
+    print(x, "→", odd_even(x))
+`,
+    blocklyXml: xml(`
+      <block type="procedures_defreturn" x="20" y="20">
+        <mutation>
+          <arg name="n"></arg>
+        </mutation>
+        <field name="NAME">odd_even</field>
+        <statement name="STACK">
+          <block type="controls_if">
+            <value name="IF0">
+              <block type="math_number_property">
+                <field name="PROPERTY">EVEN</field>
+                <value name="NUMBER_TO_CHECK"><block type="variables_get"><field name="VAR">n</field></block></value>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="text_print">
+                <value name="TEXT"><block type="text"><field name="TEXT">짝수</field></block></value>
+              </block>
+            </statement>
+          </block>
+        </statement>
+        <value name="RETURN"><block type="text"><field name="TEXT">홀수</field></block></value>
+      </block>`),
+  },
+  {
+    id: 'var-game-score',
+    topicId: 'variables',
+    title: '미니게임 점수 변수',
+    summary: '점수·콤보·생존 여부를 변수로 관리합니다.',
+    learningPoints: ['여러 변수', '갱신', '상태 출력'],
+    difficulty: '기초',
+    python: `player = "학생A"
+score = 0
+combo = 0
+alive = True
+
+# 라운드 결과 반영
+score = score + 10
+combo = combo + 1
+print(player, "점수:", score, "콤보:", combo)
+
+score = score + 20
+combo = combo + 1
+print(player, "점수:", score, "콤보:", combo)
+
+# 실수하면 콤보 초기화
+combo = 0
+alive = False
+print("게임오버?", not alive, "/ 최종점수:", score)
+`,
+    blocklyXml: xml(`
+      <block type="variables_set" x="20" y="20">
+        <field name="VAR">score</field>
+        <value name="VALUE"><block type="math_number"><field name="NUM">0</field></block></value>
+        <next>
+          <block type="variables_set">
+            <field name="VAR">score</field>
+            <value name="VALUE">
+              <block type="math_arithmetic">
+                <field name="OP">ADD</field>
+                <value name="A"><block type="variables_get"><field name="VAR">score</field></block></value>
+                <value name="B"><block type="math_number"><field name="NUM">10</field></block></value>
+              </block>
+            </value>
+            <next>
+              <block type="text_print">
+                <value name="TEXT"><block type="variables_get"><field name="VAR">score</field></block></value>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>`),
+  },
 ]
 
 export function examplesByTopic(topicId: string): Example[] {
