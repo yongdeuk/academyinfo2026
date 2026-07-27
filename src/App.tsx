@@ -331,34 +331,11 @@ export default function App() {
               <div className="lesson-head">
                 <h1>{example.title}</h1>
                 <p className="lesson-summary">{example.summary}</p>
-                <div className="lesson-guide">
-                  <h2>이 예시에서 확인할 내용</h2>
-                  <ul className="points">
-                    {example.learningPoints.map((p) => (
-                      <li key={p}>{p}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="lesson-guide">
-                  <h2>학습 방법</h2>
-                  <ol className="howto-list">
-                    <li>
-                      오른쪽 <strong>실행 화면</strong>에서 <strong>시작하기</strong>를 눌러
-                      블록 결과를 말풍선으로 확인합니다.
-                    </li>
-                    <li>
-                      아래 <strong>파이썬 코드</strong>를 읽고,
-                      <strong> ▶ 파이썬 실행</strong>으로 같은 결과가 나오는지 비교합니다.
-                    </li>
-                    <li>
-                      필요하면 <strong>🐞 디버그</strong>로 한 줄씩 실행하며 변수가 어떻게
-                      바뀌는지 관찰합니다.
-                    </li>
-                    {(topic.howto ?? []).map((step) => (
-                      <li key={step}>{step}</li>
-                    ))}
-                  </ol>
-                </div>
+                <ul className="points">
+                  {example.learningPoints.map((p) => (
+                    <li key={p}>{p}</li>
+                  ))}
+                </ul>
               </div>
             </section>
           ) : null}
