@@ -5,6 +5,7 @@ import { PRACTICES, practicesByTopic } from './data/practices'
 import { BlocklyPane } from './components/BlocklyPane'
 import { PythonPane } from './components/PythonPane'
 import { ConsoleDebugger } from './components/ConsoleDebugger'
+import { EntryStage } from './components/EntryStage'
 import { PracticePanel } from './components/PracticePanel'
 import { debugPython, getPyodide, runPython } from './lib/pyodideRunner'
 import { gradePractice } from './lib/grader'
@@ -219,21 +220,26 @@ export default function App() {
               실습 문제
             </button>
           </div>
-          <button
-            type="button"
-            className="btn primary"
-            disabled={busy || !pyReady}
-            onClick={viewMode === 'practice' ? handleGrade : handleRunPython}
-          >
-            {busy
-              ? '처리 중…'
-              : !pyReady
-                ? '엔진 로딩…'
-                : viewMode === 'practice'
-                  ? '✓ 채점'
-                  : '▶ 실행'}
-          </button>
-          {viewMode === 'example' ? (
+          {viewMode === 'practice' ? (
+            <>
+              <button
+                type="button"
+                className="btn primary"
+                disabled={busy || !pyReady}
+                onClick={handleGrade}
+              >
+                {busy ? '처리 중…' : !pyReady ? '엔진 로딩…' : '✓ 채점'}
+              </button>
+              <button
+                type="button"
+                className="btn"
+                disabled={busy || !pyReady}
+                onClick={handleRunPython}
+              >
+                ▶ 파이썬 실행
+              </button>
+            </>
+          ) : (
             <button
               type="button"
               className="btn"
@@ -241,15 +247,6 @@ export default function App() {
               onClick={handleDebug}
             >
               🐞 디버그
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="btn"
-              disabled={busy || !pyReady}
-              onClick={handleRunPython}
-            >
-              ▶ 실행
             </button>
           )}
           <button
@@ -359,14 +356,22 @@ export default function App() {
 
           <section className={`editors ${viewMode === 'practice' ? 'practice-editors' : ''}`}>
             {viewMode === 'example' ? (
-              <BlocklyPane
-                xml={blockXml}
-                autoSync={settings.autoSyncBlocks}
-                onCode={setBlockCode}
-                onRun={handleRunBlock}
-                pyReady={pyReady}
-                busy={busy}
-              />
+              <>
+                <BlocklyPane
+                  xml={blockXml}
+                  autoSync={settings.autoSyncBlocks}
+                  onCode={setBlockCode}
+                  onCopyToPython={setCode}
+                />
+                <EntryStage
+                  stdout={blockStdout}
+                  stderr={blockStderr}
+                  running={busy}
+                  onStart={handleRunBlock}
+                  pyReady={pyReady}
+                  busy={busy}
+                />
+              </>
             ) : null}
             <PythonPane
               value={code}
@@ -376,14 +381,15 @@ export default function App() {
               theme={settings.theme}
               highlightLine={highlightLine}
               readOnly={debugging && busy}
+              onRun={handleRunPython}
+              pyReady={pyReady}
+              busy={busy}
             />
           </section>
 
           <ConsoleDebugger
-            blockStdout={blockStdout}
-            blockStderr={blockStderr}
-            pythonStdout={pythonStdout}
-            pythonStderr={pythonStderr}
+            stdout={pythonStdout}
+            stderr={pythonStderr}
             frames={frames}
             frameIndex={frameIndex}
             debugging={debugging}

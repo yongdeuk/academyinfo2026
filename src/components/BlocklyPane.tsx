@@ -10,13 +10,12 @@ import {
 interface Props {
   xml?: string
   onCode: (code: string) => void
+  /** 파이썬 편집기로 복사 */
+  onCopyToPython?: (code: string) => void
   autoSync: boolean
-  onRun?: () => void
-  pyReady?: boolean
-  busy?: boolean
 }
 
-export function BlocklyPane({ xml, onCode, autoSync, onRun, pyReady, busy }: Props) {
+export function BlocklyPane({ xml, onCode, onCopyToPython, autoSync }: Props) {
   const hostRef = useRef<HTMLDivElement>(null)
   const workspaceRef = useRef<WorkspaceSvg | null>(null)
   const onCodeRef = useRef(onCode)
@@ -74,18 +73,13 @@ export function BlocklyPane({ xml, onCode, autoSync, onRun, pyReady, busy }: Pro
             className="btn ghost"
             onClick={() => {
               const ws = workspaceRef.current
-              if (ws) onCode(workspaceToPython(ws))
+              if (!ws) return
+              const py = workspaceToPython(ws)
+              onCode(py)
+              onCopyToPython?.(py)
             }}
           >
             블록 → 파이썬
-          </button>
-          <button
-            type="button"
-            className="btn primary"
-            disabled={!onRun || busy || !pyReady}
-            onClick={onRun}
-          >
-            {busy ? '실행 중…' : '블록 실행'}
           </button>
         </div>
       </div>

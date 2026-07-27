@@ -8,6 +8,9 @@ interface Props {
   theme: 'light' | 'dark'
   highlightLine?: number | null
   readOnly?: boolean
+  onRun?: () => void
+  pyReady?: boolean
+  busy?: boolean
 }
 
 export function PythonPane({
@@ -18,12 +21,25 @@ export function PythonPane({
   theme,
   highlightLine,
   readOnly,
+  onRun,
+  pyReady,
+  busy,
 }: Props) {
   return (
     <div className="pane python-pane">
       <div className="pane-header">
         <span>파이썬 코드</span>
-        {highlightLine ? <em className="line-badge">라인 {highlightLine}</em> : null}
+        <div className="pane-actions">
+          {highlightLine ? <em className="line-badge">라인 {highlightLine}</em> : null}
+          <button
+            type="button"
+            className="btn primary"
+            disabled={!onRun || busy || !pyReady}
+            onClick={onRun}
+          >
+            {busy ? '실행 중…' : '▶ 파이썬 실행'}
+          </button>
+        </div>
       </div>
       <Editor
         height="100%"
