@@ -360,46 +360,63 @@ export default function App() {
             />
           ) : null}
 
-          <section className={`editors ${viewMode === 'practice' ? 'practice-editors' : ''}`}>
+          <section className={`editors ${viewMode === 'practice' ? 'practice-editors' : 'example-editors'}`}>
             {viewMode === 'example' ? (
-              <>
-                <BlocklyPane
-                  xml={blockXml}
-                  autoSync={settings.autoSyncBlocks}
-                  onCode={setBlockCode}
-                  onCopyToPython={setCode}
-                />
-                <EntryStage
-                  stdout={blockStdout}
-                  stderr={blockStderr}
-                  running={busy}
-                  onStart={handleRunBlock}
+              <div className="work-section block-section">
+                <div className="section-banner">
+                  <strong>① 블록 코딩</strong>
+                  <span>블록을 조립하고 실행 화면에서 결과를 확인합니다</span>
+                </div>
+                <div className="section-body block-body">
+                  <BlocklyPane
+                    xml={blockXml}
+                    autoSync={settings.autoSyncBlocks}
+                    onCode={setBlockCode}
+                    onCopyToPython={setCode}
+                  />
+                  <EntryStage
+                    stdout={blockStdout}
+                    stderr={blockStderr}
+                    running={busy}
+                    onStart={handleRunBlock}
+                    pyReady={pyReady}
+                    busy={busy}
+                  />
+                </div>
+              </div>
+            ) : null}
+
+            <div className={`work-section python-section ${viewMode === 'practice' ? 'solo' : ''}`}>
+              <div className="section-banner">
+                <strong>{viewMode === 'example' ? '② 파이썬' : '파이썬 실습'}</strong>
+                <span>
+                  {viewMode === 'example'
+                    ? '코드를 읽고 실행·디버그하며 블록과 비교합니다'
+                    : '함수를 작성한 뒤 자동 채점합니다'}
+                </span>
+              </div>
+              <div className="section-body python-workspace">
+                <PythonPane
+                  value={code}
+                  onChange={setCode}
+                  fontSize={settings.fontSize}
+                  tabSize={settings.editorTabSize}
+                  theme={settings.theme}
+                  highlightLine={highlightLine}
+                  readOnly={debugging && busy}
+                  onRun={handleRunPython}
                   pyReady={pyReady}
                   busy={busy}
                 />
-              </>
-            ) : null}
-            <div className="python-workspace">
-              <PythonPane
-                value={code}
-                onChange={setCode}
-                fontSize={settings.fontSize}
-                tabSize={settings.editorTabSize}
-                theme={settings.theme}
-                highlightLine={highlightLine}
-                readOnly={debugging && busy}
-                onRun={handleRunPython}
-                pyReady={pyReady}
-                busy={busy}
-              />
-              <ConsoleDebugger
-                stdout={pythonStdout}
-                stderr={pythonStderr}
-                frames={frames}
-                frameIndex={frameIndex}
-                debugging={debugging}
-                onFrameIndex={onFrameIndex}
-              />
+                <ConsoleDebugger
+                  stdout={pythonStdout}
+                  stderr={pythonStderr}
+                  frames={frames}
+                  frameIndex={frameIndex}
+                  debugging={debugging}
+                  onFrameIndex={onFrameIndex}
+                />
+              </div>
             </div>
           </section>
         </main>
