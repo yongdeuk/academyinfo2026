@@ -418,6 +418,12 @@ html[data-theme='dark'] .points li {
   font-weight: 600;
 }
 
+.pane-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
 .blockly-host {
   flex: 1;
   min-height: 280px;
@@ -506,7 +512,7 @@ html[data-theme='dark'] .points li {
 
 .console-debug {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: 1fr 1fr 0.9fr;
   gap: 0.65rem;
   min-height: 180px;
 }
@@ -520,6 +526,10 @@ html[data-theme='dark'] .points li {
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+}
+
+.console-col {
+  min-width: 0;
 }
 
 .console-out {

@@ -28,9 +28,12 @@ export default function App() {
   const [exampleId, setExampleId] = useState(EXAMPLES[0].id)
   const [practiceId, setPracticeId] = useState(PRACTICES[0].id)
   const [code, setCode] = useState(EXAMPLES[0].python)
+  const [blockCode, setBlockCode] = useState(EXAMPLES[0].python)
   const [blockXml, setBlockXml] = useState(EXAMPLES[0].blocklyXml)
-  const [stdout, setStdout] = useState('')
-  const [stderr, setStderr] = useState('')
+  const [blockStdout, setBlockStdout] = useState('')
+  const [blockStderr, setBlockStderr] = useState('')
+  const [pythonStdout, setPythonStdout] = useState('')
+  const [pythonStderr, setPythonStderr] = useState('')
   const [frames, setFrames] = useState<DebugFrame[]>([])
   const [frameIndex, setFrameIndex] = useState(0)
   const [debugging, setDebugging] = useState(false)
@@ -64,13 +67,15 @@ export default function App() {
       .then(() => setPyReady(true))
       .catch((e) => {
         console.error(e)
-        setStderr('Pyodide 로드 실패: 네트워크를 확인하세요.')
+        setPythonStderr('Pyodide 로드 실패: 네트워크를 확인하세요.')
       })
   }, [])
 
   const clearRunState = () => {
-    setStdout('')
-    setStderr('')
+    setBlockStdout('')
+    setBlockStderr('')
+    setPythonStdout('')
+    setPythonStderr('')
     setFrames([])
     setFrameIndex(0)
     setDebugging(false)
@@ -85,6 +90,7 @@ export default function App() {
     setExampleId(ex.id)
     setTopicId(ex.topicId)
     setCode(ex.python)
+    setBlockCode(ex.python)
     setBlockXml(ex.blocklyXml)
     clearRunState()
   }, [])
@@ -96,6 +102,7 @@ export default function App() {
     setPracticeId(p.id)
     setTopicId(p.topicId)
     setCode(p.starterCode)
+    setBlockCode('')
     setBlockXml('<xml xmlns="https://developers.google.com/blockly/xml"></xml>')
     clearRunState()
   }, [])
@@ -111,15 +118,29 @@ export default function App() {
     }
   }
 
-  const handleRun = async () => {
+  const handleRunPython = async () => {
     setBusy(true)
     setDebugging(false)
     setFrames([])
     setFrameIndex(0)
     try {
       const result = await runPython(code)
-      setStdout(result.stdout)
-      setStderr(result.stderr)
+      setPythonStdout(result.stdout)
+      setPythonStderr(result.stderr)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleRunBlock = async () => {
+    setBusy(true)
+    setDebugging(false)
+    setFrames([])
+    setFrameIndex(0)
+    try {
+      const result = await runPython(blockCode)
+      setBlockStdout(result.stdout)
+      setBlockStderr(result.stderr)
     } finally {
       setBusy(false)
     }
@@ -129,13 +150,13 @@ export default function App() {
     setBusy(true)
     try {
       const result = await debugPython(code)
-      setStdout(result.stdout)
-      setStderr(result.stderr)
+      setPythonStdout(result.stdout)
+      setPythonStderr(result.stderr)
       setFrames(result.frames ?? [])
       setFrameIndex(0)
       setDebugging(true)
       if (result.frames?.[0]) {
-        setStdout(result.frames[0].stdout || result.stdout)
+        setPythonStdout(result.frames[0].stdout || result.stdout)
       }
     } finally {
       setBusy(false)
@@ -149,12 +170,12 @@ export default function App() {
     try {
       const result = await gradePractice(practice, code)
       setGrade(result)
-      setStdout(
+      setPythonStdout(
         result.compileError
           ? ''
           : `채점: ${result.passed}/${result.total} 통과`,
       )
-      setStderr(result.compileError ?? '')
+      setPythonStderr(result.compileError ?? '')
     } finally {
       setBusy(false)
     }
@@ -163,7 +184,7 @@ export default function App() {
   const onFrameIndex = (i: number) => {
     setFrameIndex(i)
     const f = frames[i]
-    if (f) setStdout(f.stdout)
+    if (f) setPythonStdout(f.stdout)
   }
 
   const highlightLine = debugging ? frames[frameIndex]?.line ?? null : null
@@ -202,7 +223,7 @@ export default function App() {
             type="button"
             className="btn primary"
             disabled={busy || !pyReady}
-            onClick={viewMode === 'practice' ? handleGrade : handleRun}
+            onClick={viewMode === 'practice' ? handleGrade : handleRunPython}
           >
             {busy
               ? '처리 중…'
@@ -226,7 +247,7 @@ export default function App() {
               type="button"
               className="btn"
               disabled={busy || !pyReady}
-              onClick={handleRun}
+              onClick={handleRunPython}
             >
               ▶ 실행
             </button>
@@ -341,7 +362,10 @@ export default function App() {
               <BlocklyPane
                 xml={blockXml}
                 autoSync={settings.autoSyncBlocks}
-                onCode={setCode}
+                onCode={setBlockCode}
+                onRun={handleRunBlock}
+                pyReady={pyReady}
+                busy={busy}
               />
             ) : null}
             <PythonPane
@@ -356,8 +380,10 @@ export default function App() {
           </section>
 
           <ConsoleDebugger
-            stdout={stdout}
-            stderr={stderr}
+            blockStdout={blockStdout}
+            blockStderr={blockStderr}
+            pythonStdout={pythonStdout}
+            pythonStderr={pythonStderr}
             frames={frames}
             frameIndex={frameIndex}
             debugging={debugging}

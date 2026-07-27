@@ -1,8 +1,10 @@
 import type { DebugFrame } from '../types'
 
 interface Props {
-  stdout: string
-  stderr: string
+  blockStdout: string
+  blockStderr: string
+  pythonStdout: string
+  pythonStderr: string
   frames: DebugFrame[]
   frameIndex: number
   debugging: boolean
@@ -10,8 +12,10 @@ interface Props {
 }
 
 export function ConsoleDebugger({
-  stdout,
-  stderr,
+  blockStdout,
+  blockStderr,
+  pythonStdout,
+  pythonStderr,
   frames,
   frameIndex,
   debugging,
@@ -24,7 +28,16 @@ export function ConsoleDebugger({
     <div className="console-debug">
       <div className="console-col">
         <div className="pane-header">
-          <span>실행 결과</span>
+          <span>블록 실행 결과</span>
+        </div>
+        <pre className={`console-out ${blockStderr ? 'has-error' : ''}`}>
+          {blockStdout || (blockStderr ? '' : '블록 실행 결과가 여기에 표시됩니다.')}
+          {blockStderr ? `\n[오류]\n${blockStderr}` : ''}
+        </pre>
+      </div>
+      <div className="console-col">
+        <div className="pane-header">
+          <span>파이썬 실행 결과</span>
           {debugging && frames.length > 0 ? (
             <span className="muted">
               스텝 {frameIndex + 1}/{frames.length}
@@ -32,9 +45,9 @@ export function ConsoleDebugger({
             </span>
           ) : null}
         </div>
-        <pre className={`console-out ${stderr ? 'has-error' : ''}`}>
-          {stdout || (stderr ? '' : '실행 결과가 여기에 표시됩니다.')}
-          {stderr ? `\n[오류]\n${stderr}` : ''}
+        <pre className={`console-out ${pythonStderr ? 'has-error' : ''}`}>
+          {pythonStdout || (pythonStderr ? '' : '파이썬 실행 결과가 여기에 표시됩니다.')}
+          {pythonStderr ? `\n[오류]\n${pythonStderr}` : ''}
         </pre>
         {debugging && frames.length > 0 ? (
           <div className="step-controls">
