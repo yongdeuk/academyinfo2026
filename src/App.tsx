@@ -13,7 +13,7 @@ import type { AppSettings, DebugFrame, GradeResult, TopicId } from './types'
 import './styles.css'
 
 const DEFAULT_SETTINGS: AppSettings = {
-  fontSize: 15,
+  fontSize: 18,
   autoSyncBlocks: true,
   showLineNumbers: true,
   debugCaptureStdout: true,
@@ -45,8 +45,14 @@ export default function App() {
   const [showSolution, setShowSolution] = useState(false)
   const [settings, setSettings] = useState<AppSettings>(() => {
     try {
-      const raw = localStorage.getItem('b2p-settings')
-      return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : DEFAULT_SETTINGS
+      const raw =
+        localStorage.getItem('codebridge-settings') ??
+        localStorage.getItem('b2p-settings')
+      if (!raw) return DEFAULT_SETTINGS
+      const parsed = { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } as AppSettings
+      // 학습용: 예전 작은 글자 설정은 기본값으로 올림
+      if (parsed.fontSize < 17) parsed.fontSize = 18
+      return parsed
     } catch {
       return DEFAULT_SETTINGS
     }
@@ -59,7 +65,7 @@ export default function App() {
   const practice = PRACTICES.find((p) => p.id === practiceId) ?? topicPractices[0]
 
   useEffect(() => {
-    localStorage.setItem('b2p-settings', JSON.stringify(settings))
+    localStorage.setItem('codebridge-settings', JSON.stringify(settings))
     document.documentElement.dataset.theme = settings.theme
   }, [settings])
 
@@ -194,7 +200,7 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand">
-          <strong>코드브릿지</strong>
+          <strong>블록투파이썬</strong>
           <span>블록 ↔ 파이썬 · 예시 학습 · 실습 자동채점</span>
         </div>
         <div className="actions">
@@ -324,12 +330,35 @@ export default function App() {
             <section className="lesson">
               <div className="lesson-head">
                 <h1>{example.title}</h1>
-                <p>{example.summary}</p>
-                <ul className="points">
-                  {example.learningPoints.map((p) => (
-                    <li key={p}>{p}</li>
-                  ))}
-                </ul>
+                <p className="lesson-summary">{example.summary}</p>
+                <div className="lesson-guide">
+                  <h2>이 예시에서 확인할 내용</h2>
+                  <ul className="points">
+                    {example.learningPoints.map((p) => (
+                      <li key={p}>{p}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="lesson-guide">
+                  <h2>학습 방법</h2>
+                  <ol className="howto-list">
+                    <li>
+                      오른쪽 <strong>실행 화면</strong>에서 <strong>시작하기</strong>를 눌러
+                      블록 결과를 말풍선으로 확인합니다.
+                    </li>
+                    <li>
+                      아래 <strong>파이썬 코드</strong>를 읽고,
+                      <strong> ▶ 파이썬 실행</strong>으로 같은 결과가 나오는지 비교합니다.
+                    </li>
+                    <li>
+                      필요하면 <strong>🐞 디버그</strong>로 한 줄씩 실행하며 변수가 어떻게
+                      바뀌는지 관찰합니다.
+                    </li>
+                    {(topic.howto ?? []).map((step) => (
+                      <li key={step}>{step}</li>
+                    ))}
+                  </ol>
+                </div>
               </div>
             </section>
           ) : null}
@@ -405,8 +434,8 @@ export default function App() {
             글자 크기
             <input
               type="range"
-              min={12}
-              max={22}
+              min={14}
+              max={26}
               value={settings.fontSize}
               onChange={(e) =>
                 setSettings((s) => ({ ...s, fontSize: Number(e.target.value) }))
