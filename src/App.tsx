@@ -194,8 +194,8 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand">
-          <strong>block2python</strong>
-          <span>중·고 정보 연계 · 예시 학습 · 실습 자동채점</span>
+          <strong>코드브릿지</strong>
+          <span>블록 ↔ 파이썬 · 예시 학습 · 실습 자동채점</span>
         </div>
         <div className="actions">
           <div className="mode-toggle" role="group" aria-label="모드">
