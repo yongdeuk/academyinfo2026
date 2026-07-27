@@ -402,28 +402,29 @@ export default function App() {
                 />
               </>
             ) : null}
-            <PythonPane
-              value={code}
-              onChange={setCode}
-              fontSize={settings.fontSize}
-              tabSize={settings.editorTabSize}
-              theme={settings.theme}
-              highlightLine={highlightLine}
-              readOnly={debugging && busy}
-              onRun={handleRunPython}
-              pyReady={pyReady}
-              busy={busy}
-            />
+            <div className="python-workspace">
+              <PythonPane
+                value={code}
+                onChange={setCode}
+                fontSize={settings.fontSize}
+                tabSize={settings.editorTabSize}
+                theme={settings.theme}
+                highlightLine={highlightLine}
+                readOnly={debugging && busy}
+                onRun={handleRunPython}
+                pyReady={pyReady}
+                busy={busy}
+              />
+              <ConsoleDebugger
+                stdout={pythonStdout}
+                stderr={pythonStderr}
+                frames={frames}
+                frameIndex={frameIndex}
+                debugging={debugging}
+                onFrameIndex={onFrameIndex}
+              />
+            </div>
           </section>
-
-          <ConsoleDebugger
-            stdout={pythonStdout}
-            stderr={pythonStderr}
-            frames={frames}
-            frameIndex={frameIndex}
-            debugging={debugging}
-            onFrameIndex={onFrameIndex}
-          />
         </main>
       </div>
 

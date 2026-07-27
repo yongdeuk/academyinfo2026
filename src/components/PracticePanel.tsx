@@ -30,11 +30,14 @@ export function PracticePanel({
           <h1>{problem.title}</h1>
           <p className="practice-desc">{problem.description}</p>
           {problem.tips && problem.tips.length > 0 ? (
-            <ul className="points">
-              {problem.tips.map((t) => (
-                <li key={t}>{t}</li>
-              ))}
-            </ul>
+            <div className="lesson-guide">
+              <h2>힌트</h2>
+              <ul className="points">
+                {problem.tips.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </div>
           ) : null}
         </div>
         <div className="practice-actions">
@@ -88,8 +91,9 @@ export function PracticePanel({
           </ul>
         </div>
       ) : (
-        <p className="muted small">
+        <p className="practice-hint">
           함수를 완성한 뒤 <strong>자동 채점</strong>을 누르면 테스트 케이스로 검사합니다.
+          함수 이름과 반환값 형식을 문제에 맞게 작성해야 통과합니다.
         </p>
       )}
     </section>

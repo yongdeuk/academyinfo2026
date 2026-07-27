@@ -11,6 +11,8 @@ export interface Topic {
   label: string
   short: string
   description: string
+  /** 학생용 학습 순서 안내 */
+  howto?: string[]
 }
 
 export interface Example {
