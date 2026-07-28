@@ -4,18 +4,27 @@ import * as Blockly from 'blockly'
 import {
   createWorkspace,
   loadXml,
+  updateToolbox,
   workspaceToPython,
 } from '../lib/blocklySetup'
+import type { TopicId } from '../types'
 
 interface Props {
   xml?: string
+  topicId: TopicId
   onCode: (code: string) => void
   /** 파이썬 편집기로 복사 */
   onCopyToPython?: (code: string) => void
   autoSync: boolean
 }
 
-export function BlocklyPane({ xml, onCode, onCopyToPython, autoSync }: Props) {
+export function BlocklyPane({
+  xml,
+  topicId,
+  onCode,
+  onCopyToPython,
+  autoSync,
+}: Props) {
   const hostRef = useRef<HTMLDivElement>(null)
   const workspaceRef = useRef<WorkspaceSvg | null>(null)
   const onCodeRef = useRef(onCode)
@@ -31,7 +40,7 @@ export function BlocklyPane({ xml, onCode, onCopyToPython, autoSync }: Props) {
 
   useEffect(() => {
     if (!hostRef.current) return
-    const ws = createWorkspace(hostRef.current)
+    const ws = createWorkspace(hostRef.current, topicId)
     workspaceRef.current = ws
 
     const sync = () => {
@@ -50,6 +59,12 @@ export function BlocklyPane({ xml, onCode, onCopyToPython, autoSync }: Props) {
       workspaceRef.current = null
     }
   }, [])
+
+  useEffect(() => {
+    const ws = workspaceRef.current
+    if (!ws) return
+    updateToolbox(ws, topicId)
+  }, [topicId])
 
   useEffect(() => {
     const ws = workspaceRef.current

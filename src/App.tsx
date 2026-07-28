@@ -370,6 +370,7 @@ export default function App() {
                 <div className="section-body block-body">
                   <BlocklyPane
                     xml={blockXml}
+                    topicId={topicId}
                     autoSync={settings.autoSyncBlocks}
                     onCode={setBlockCode}
                     onCopyToPython={setCode}
