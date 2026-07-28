@@ -41,56 +41,60 @@ export function PythonPane({
           </button>
         </div>
       </div>
-      <Editor
-        height="100%"
-        language="python"
-        theme={theme === 'dark' ? 'vs-dark' : 'light'}
-        value={value}
-        onChange={(v) => onChange(v ?? '')}
-        options={{
-          fontSize,
-          tabSize,
-          minimap: { enabled: false },
-          fontFamily: "'IBM Plex Mono', Consolas, monospace",
-          lineNumbers: 'on',
-          automaticLayout: true,
-          scrollBeyondLastLine: false,
-          readOnly: !!readOnly,
-          glyphMargin: true,
-          renderLineHighlight: 'line',
-        }}
-        onMount={(editor, monaco) => {
-          const updateDecoration = () => {
-            const line = highlightLine
-            if (!line) {
-              editor.deltaDecorations(
+      <div className="python-editor-host">
+        <Editor
+          height="100%"
+          defaultLanguage="python"
+          language="python"
+          theme={theme === 'dark' ? 'vs-dark' : 'light'}
+          value={value}
+          onChange={(v) => onChange(v ?? '')}
+          options={{
+            fontSize,
+            tabSize,
+            minimap: { enabled: false },
+            fontFamily: "'IBM Plex Mono', Consolas, monospace",
+            lineNumbers: 'on',
+            automaticLayout: true,
+            scrollBeyondLastLine: false,
+            readOnly: !!readOnly,
+            glyphMargin: true,
+            renderLineHighlight: 'line',
+            wordWrap: 'on',
+          }}
+          onMount={(editor, monaco) => {
+            const updateDecoration = () => {
+              const line = highlightLine
+              if (!line) {
+                editor.deltaDecorations(
+                  (editor as unknown as { __dbg?: string[] }).__dbg ?? [],
+                  [],
+                )
+                return
+              }
+              const deco = editor.deltaDecorations(
                 (editor as unknown as { __dbg?: string[] }).__dbg ?? [],
-                [],
-              )
-              return
-            }
-            const deco = editor.deltaDecorations(
-              (editor as unknown as { __dbg?: string[] }).__dbg ?? [],
-              [
-                {
-                  range: new monaco.Range(line, 1, line, 1),
-                  options: {
-                    isWholeLine: true,
-                    className: 'debug-line',
-                    glyphMarginClassName: 'debug-glyph',
+                [
+                  {
+                    range: new monaco.Range(line, 1, line, 1),
+                    options: {
+                      isWholeLine: true,
+                      className: 'debug-line',
+                      glyphMarginClassName: 'debug-glyph',
+                    },
                   },
-                },
-              ],
-            )
-            ;(editor as unknown as { __dbg?: string[] }).__dbg = deco
-            editor.revealLineInCenter(line)
-          }
-          updateDecoration()
-          ;(editor as unknown as { __updateDbg?: () => void }).__updateDbg =
-            updateDecoration
-        }}
-        key={`${theme}-${highlightLine ?? 0}-${readOnly ? 1 : 0}`}
-      />
+                ],
+              )
+              ;(editor as unknown as { __dbg?: string[] }).__dbg = deco
+              editor.revealLineInCenter(line)
+            }
+            updateDecoration()
+            ;(editor as unknown as { __updateDbg?: () => void }).__updateDbg =
+              updateDecoration
+          }}
+          key={`${theme}-${highlightLine ?? 0}-${readOnly ? 1 : 0}`}
+        />
+      </div>
     </div>
   )
 }
